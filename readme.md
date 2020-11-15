@@ -1,4 +1,5 @@
 ### A Spherical Convolution Approach for Learning Long Term Viewport Prediction in 360 Immersive Video
+> Wu, Chenglei, et al. "A Spherical Convolution Approach for Learning Long Term Viewport Prediction in 360 Immersive Video." Proceedings of the AAAI Conference on Artificial Intelligence. Vol. 34. No. 01. 2020.
 
 1. Requirements
     - s2cnn
