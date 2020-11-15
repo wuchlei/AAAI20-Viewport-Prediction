@@ -9,7 +9,6 @@ import constant
 import lie_learn.spaces.S3 as S3
 
 nonlinear = nn.ReLU
-# nonlinear = nn.Sigmoid
 
 def cal_haar_measure_weight(b):
     import lie_learn.spaces.S3 as S3
@@ -62,11 +61,7 @@ class spherical_residual_image_encoder(nn.Module):
 
         # S2 layer
         grid = s2_near_identity_grid(n_alpha=2 * self.bandwidths[0], n_beta=2) #, max_beta=0.2)
-        # grid = s2_near_identity_grid(n_alpha=self.bandwidths[0], n_beta=4) #, max_beta=0.2)
-        # grid = s2_equatorial_grid(n_alpha=2 * self.bandwidths[0], n_beta=1)
-
         sequence.append(S2Convolution(self.features[0], self.features[1], self.bandwidths[0], self.bandwidths[1], grid))
-        # sequence.append(nn.BatchNorm3d(self.features[1], affine=True))
         sequence.append(nn.GroupNorm(self.groups[0], self.features[1]))
         sequence.append(nonlinear())
 
@@ -90,8 +85,6 @@ class spherical_residual_image_encoder(nn.Module):
     def forward(self, x):  # pylint: disable=W0221
         x = self.sequential(x)  # [batch, feature, beta, alpha, gamma]
         x = so3_integrate(x)  # [batch, feature]
-        #x = x.view(x.size(0), x.size(1), -1).max(-1)[0]
-        # x = x.view(x.size(0), -1)
 
         return x
 
@@ -101,18 +94,10 @@ class so3_residual_block(nn.Module):
         grid1 = so3_near_identity_grid(n_alpha=2 * b_in, n_beta=2, n_gamma=2) #max_beta=0, max_gamma=0, 
         grid2 = so3_near_identity_grid(n_alpha=2 * b_mid, n_beta=2, n_gamma=2) #max_beta=0, max_gamma=0, 
 
-        # grid1 = so3_near_identity_grid(n_alpha=b_in, n_beta=3, n_gamma=3) #max_beta=0, max_gamma=0, 
-        # grid2 = so3_near_identity_grid(n_alpha=b_mid, n_beta=3, n_gamma=3) #max_beta=0, max_gamma=0, 
-
-        # grid1 = so3_equatorial_grid(n_alpha=2 * b_in, n_beta=1, n_gamma=1)
-        # grid2 = so3_equatorial_grid(n_alpha=2 * b_in, n_beta=1, n_gamma=1)
-
         self.left = nn.Sequential(
             SO3Convolution(f_in, f_mid, b_in, b_mid, grid1),
-            # nn.BatchNorm3d(f_mid, affine=True),
             nn.GroupNorm(n_group_mid, f_mid),
             SO3Convolution(f_mid, f_out, b_mid, b_out, grid2),
-            # nn.BatchNorm3d(f_out, affine=True),
             nn.GroupNorm(n_group_out, f_out),
             nonlinear()
         )
@@ -121,7 +106,6 @@ class so3_residual_block(nn.Module):
 
     def forward(self, x):
         x = self.left(x) + self.shortcut(x)
-        # x += self.shortcut(x)
         x = F.relu(x)
         return x
 
@@ -137,13 +121,9 @@ class spherical_image_encoder(nn.Module):
         sequence = []
 
         # S2 layer
-        # grid = s2_near_identity_grid(n_alpha = self.bandwidths[0], n_beta= 4)
         grid = s2_near_identity_grid(n_alpha=2 * self.bandwidths[0], n_beta=2)
-        # grid = s2_equatorial_grid(max_beta=0, n_alpha=2 * self.bandwidths[0], n_beta=1)
-        # grid = s2_soft_grid(self.bandwidths[0])
         sequence.append(S2Convolution(self.features[0], self.features[1], self.bandwidths[0], self.bandwidths[1], grid))
         sequence.append(nn.BatchNorm3d(self.features[1], affine=True))
-        # sequence.append(nn.GroupNorm(self.groups[0], self.features[1]))
         sequence.append(nonlinear())
 
         # SO3 layers
@@ -156,25 +136,16 @@ class spherical_image_encoder(nn.Module):
             
             n_group = self.groups[l]
 
-            # grid = so3_near_identity_grid(n_alpha= b_in, n_beta= 3, n_gamma= 3)  
             grid = so3_near_identity_grid(n_alpha=2 * b_in, n_beta=2, n_gamma=2)  
-            # grid = so3_equatorial_grid(max_beta=0, max_gamma=0, n_alpha=2 * b_in, n_beta=1, n_gamma=1)
-
             sequence.append(SO3Convolution(f_in, f_out, b_in, b_out, grid))
 
             sequence.append(nn.BatchNorm3d(f_out, affine=True))
-            # sequence.append(nn.GroupNorm(n_group, f_out))
-
             sequence.append(nonlinear())
 
         self.sequential = nn.Sequential(*sequence)
 
     def forward(self, x):  # pylint: disable=W0221
         x = self.sequential(x)  # [batch, feature, beta, alpha, gamma]
-        # x = so3_integrate(x)  # [batch, feature]
-        #x = x.view(x.size(0), x.size(1), -1).max(-1)[0]
-        #x = x.view(x.size(0), -1)
-
         return x
 
 class ucf_image_predictor(nn.Module):
@@ -210,8 +181,6 @@ class spherical_encoder(nn.Module):
 
         # S2 layer
         grid = s2_near_identity_grid(n_alpha=2 * self.bandwidths[0], n_beta=2)
-        # grid = s2_equatorial_grid(max_beta=0, n_alpha=2 * self.bandwidths[0], n_beta=1)
-        # grid = s2_soft_grid(self.bandwidths[0])
         sequence.append(S2Convolution(self.features[0], self.features[1], self.bandwidths[0], self.bandwidths[1], grid))
         sequence.append(nn.BatchNorm3d(self.features[1], affine=True))
         sequence.append(nn.ReLU())
@@ -224,8 +193,6 @@ class spherical_encoder(nn.Module):
             b_out = self.bandwidths[l + 1]
 
             grid = so3_near_identity_grid(n_alpha=2 * b_in, n_beta=2, n_gamma=2)  
-            # grid = so3_equatorial_grid(max_beta=0, max_gamma=0, n_alpha=2 * b_in, n_beta=1, n_gamma=1)
-            # grid = so3_soft_grid(b_in)
             sequence.append(SO3Convolution(nfeature_in, nfeature_out, b_in, b_out, grid))
             sequence.append(nn.BatchNorm3d(nfeature_out, affine=True))
             sequence.append(nn.ReLU())
@@ -237,9 +204,6 @@ class spherical_encoder(nn.Module):
         self.n_layers = constant.ENCODER_LAYERS
         self.rnn = nn.GRU(input_size = self.input_size, hidden_size = self.hidden_size, num_layers = self.n_layers, batch_first=True)
 
-        # output_features = self.features[-2]
-        # self.out_layer = nn.Linear(output_features, self.features[-1])
-
     def forward(self, x):  # pylint: disable=W0221
         input_shape = x.shape
         assert len(input_shape) == 5
@@ -247,7 +211,6 @@ class spherical_encoder(nn.Module):
         x = x.contiguous().view(input_shape[0]*input_shape[1], input_shape[2], input_shape[3], input_shape[4])
 
         x = self.sequential(x)  # [batch, feature, beta, alpha, gamma]
-        # x = so3_integrate(x)  # [batch, feature]
         x = x.view(x.size(0), x.size(1), -1).max(-1)[0]
 
         x = x.contiguous().view(input_shape[0], input_shape[1], -1)
@@ -262,9 +225,6 @@ class spherical_encoder(nn.Module):
         x = x[:,-1,:]
 
         return x
-        # x = x.contiguous().view(h.size(0)*h.size(1), h.size(2))
-        # x = self.out_layer(x)
-        # return F.log_softmax(x, dim=1)
 
 class SO3Shortcut(nn.Module):
     def __init__(self, f_in, f_out, b_in, b_out):
@@ -303,7 +263,6 @@ class spherical_residual_encoder(nn.Module):
 
         # S2 layer
         grid = s2_near_identity_grid(n_alpha=2 * self.bandwidths[0], n_beta=2, max_beta=0.2)
-        # grid = s2_equatorial_grid(max_beta=0, n_alpha=2 * self.bandwidths[0], n_beta=1)
         sequence.append(S2Convolution(self.features[0], self.features[1], self.bandwidths[0], self.bandwidths[1], grid))
         sequence.append(nn.BatchNorm3d(self.features[1], affine=True))
         sequence.append(nn.ReLU())
@@ -332,7 +291,6 @@ class spherical_residual_encoder(nn.Module):
         x = x.contiguous().view(input_shape[0]*input_shape[1], input_shape[2], input_shape[3], input_shape[4])
 
         x = self.sequential(x)  # [batch, feature, beta, alpha, gamma]
-        # x = so3_integrate(x)  # [batch, feature]
 
         x = x.contiguous().view(input_shape[0], input_shape[1], -1)
         h0 = torch.zeros(self.n_layers, input_shape[0], self.hidden_size)

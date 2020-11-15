@@ -12,11 +12,6 @@ import cv_toolkits
 
 np.set_printoptions(precision=2)
 
-# def adjust_learning_rate(optimizer, epoch):
-#     lr = learning_rate * (0.1 ** (epoch // 5))
-#     for param_group in optimizer.param_groups:
-#         param_group['lr'] = lr
-
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
@@ -31,9 +26,7 @@ def train(args):
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    # encoder = spherical_encoder()
     encoder = spherical_residual_encoder()
-    # predictor = mdn()
     predictor = g_mdn()
     encoder_optimizer = torch.optim.Adam(encoder.parameters(), lr=constant.LEARNING_RATE)
     predictor_optimizer = torch.optim.Adam(predictor.parameters(), lr=constant.LEARNING_RATE)
@@ -46,7 +39,6 @@ def train(args):
             gpu_ids = [0, 1]
 
         gpu_cnt = len(gpu_ids)
-        # print("Use", torch.cuda.device_count(), "GPUs!")
         encoder = nn.DataParallel(encoder, device_ids=gpu_ids)
         predictor = nn.DataParallel(predictor, device_ids=gpu_ids)
         
@@ -80,8 +72,6 @@ def train(args):
             inputs = inputs.view(input_shape[0]*input_shape[1], input_shape[2], input_shape[3], input_shape[4], input_shape[5])
 
             representations = encoder(inputs).view(input_shape[0], input_shape[1], -1)           
-            # vmf_params = predictor(representations)
-            # predictions = vmf_to_pdf(*vmf_params)
             gmm_params = predictor(representations)
             predictions = gmm_to_pdf(*gmm_params)
 
@@ -92,9 +82,7 @@ def train(args):
                     visualize.save_matrix_to_image(-targets[j,:,:].cpu().detach().numpy(), 'visua_res/epoch-%d-step-%d-%d-target.jpg'%(epoch+1,i,j))
                     visualize.save_matrix_to_image(-predictions[j,:,:].cpu().detach().numpy(), 'visua_res/epoch-%d-step-%d-%d-result.jpg'%(epoch+1,i,j))
 
-            # loss = 0.2*nll(predictions, targets)+0.8*mse(predictions, targets)
             loss = nll(predictions, targets)
-            # loss = mse(predictions, targets)
             loss = torch.mean(loss)
             loss.backward()
 

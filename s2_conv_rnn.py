@@ -21,7 +21,6 @@ class s2_conv_rnn_cell(nn.Module):
         self.bandwidth = bandwidth
 
         grid = s2_near_identity_grid(n_alpha=2 * bandwidth)  
-        # grid = ((0, 0, 0), )
         self.reset_gate = S2Convolution(f_in+f_hidden, f_hidden, bandwidth, bandwidth, grid)
         self.update_gate = S2Convolution(f_in+f_hidden, f_hidden, bandwidth, bandwidth, grid)
         self.output_gate = S2Convolution(f_in+f_hidden, f_hidden, bandwidth, bandwidth, grid)
@@ -114,12 +113,6 @@ class s2_conv_rnn(nn.Module):
 class s2_rnn_encoder(nn.Module):
     def __init__(self):
         super().__init__()
-
-        # self.feature = constant.ENCODER_FEATURES[-1]
-        # self.bandwidth = constant.ENCODER_BANDWIDTH[-1]
-        # self.groups = constant.ENCODER_GROUPS
-
-        # self.rnn = s2_conv_rnn(self.feature, self.feature, self.bandwidth, 1)
         self.rnn = s2_conv_rnn(*constant.S2_RNN_ENCODER)
 
     def forward(self, x):  # pylint: disable=W0221
