@@ -23,4 +23,5 @@ If you find these codes useful, please cite:
 ```
 
 4. Contact
-If you have any questions, please contact [wucl18@mails.tsinghua.edu.cn](mailto:wucl18@mails.tsinghua.edu.cn)
+
+If you have any questions, feel free to contact me via [wucl18@mails.tsinghua.edu.cn](mailto:wucl18@mails.tsinghua.edu.cn).
