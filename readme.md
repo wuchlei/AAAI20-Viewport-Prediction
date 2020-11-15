@@ -4,7 +4,7 @@
     - s2cnn
 
 2. Training and Testing
-As this is my first AI project, so the many of the old training and testing codes require refactoring. Please refer to this [new project]() for a more clean code and many other improvements.
+As this is my first AI project, so the many of the old training and testing codes require refactoring. Please refer to this [new project](https://github.com/wuchlei/TMM-Viewport-Prediction) for a more clean code and many other improvements.
 
 3. Citation
 If you find these codes useful, please cite:
@@ -21,4 +21,4 @@ If you find these codes useful, please cite:
 ```
 
 4. Contact
-If you have any questions, please contact [wucl18@mails.tsinghua.edu.cn](mailto@wucl18@mails.tsinghua.edu.cn)
+If you have any questions, please contact [wucl18@mails.tsinghua.edu.cn](mailto:wucl18@mails.tsinghua.edu.cn)
